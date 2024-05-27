@@ -1,4 +1,4 @@
-import { Actor, CollisionType, Color, Engine, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, Text, vec } from "excalibur"
 
 // 1 - Criar uma instancia de Engine, que representa o jogo
 const game = new Engine({
@@ -39,7 +39,7 @@ const bolinha = new Actor({
 bolinha.body.collisionType = CollisionType.Passive
 
 // 5 - Criar movimentação da bolinha
-const velocidadeBolinha = vec(100, 100)
+const velocidadeBolinha = vec(1000, 1000)
 
 // Após 1 segundo (1000ms), define a velocidade da bolinha em x = 100 e y = 100
 setTimeout(() => {
@@ -57,12 +57,12 @@ bolinha.on("postupdate", () => {
 	if (bolinha.pos.x + bolinha.width / 2 > game.drawWidth) {
 		bolinha.vel.x = -velocidadeBolinha.x
 	}
-	
+
 	// Se a bolinha colidir com a parte superior
 	if (bolinha.pos.y < bolinha.height / 2) {
 		bolinha.vel.y = velocidadeBolinha.y
 	}
-	
+
 	// Se a bolinha colidir com a parte inferior
 	// if (bolinha.pos.y + bolinha.height / 2 > game.drawHeight) {
 	// 	bolinha.vel.y = -velocidadeBolinha.y
@@ -82,13 +82,97 @@ const yoffset = 20
 const colunas = 5
 const linhas = 3
 
-const corBloco = [Color.Violet, Color.Orange, Color.Yellow]
+const corBloco = [Color.Vermilion, Color.Orange, Color.Yellow]
 
 const larguraBloco = (game.drawWidth / colunas) - padding - (padding / colunas)
 // const larguraBloco = 136
 const alturaBloco = 30
 
 const listaBlocos: Actor[] = []
+
+// Renderiza 3 linhas
+for (let j = 0; j < linhas; j++) {
+	
+	// Renderização dos 5 bloquinhos
+	for (let i = 0; i < colunas; i++) {
+		listaBlocos.push(
+			new Actor({
+				x: xoffset + i * (larguraBloco + padding) + padding,
+				y: yoffset + j * (alturaBloco + padding) + padding,
+				width: larguraBloco,
+				height: alturaBloco,
+				color: corBloco[j]
+			})
+		)
+	}
+}
+
+listaBlocos.forEach(bloco => {
+	// Define o tipo de colisor de cada bloco
+	bloco.body.collisionType = CollisionType.Active
+
+	// Adiciona cada bloco no game
+	game.add(bloco)
+})
+
+let pontos = 0
+
+const textoPontos = new Text({
+	text: "Hello World",
+	font: new Font({ size: 30 })
+})
+
+const objetoTexto = new Actor({
+	x: game.drawWidth - 80,
+	y: game.drawHeight - 15
+})
+
+objetoTexto.graphics.use(textoPontos)
+
+game.add(objetoTexto)
+
+let colidindo: boolean = false
+
+bolinha.on("collisionstart", (event) => {
+	// Verificar se a bolinha colidiu com algum bloco destrutivel
+	console.log("Colidiu com", event.other.name);
+	
+	// Se o elemento colidido for um bloco da lista de blocos (destrutiveis)
+	if (listaBlocos.includes(event.other)) {
+		// Destruir o bloco colidido
+		event.other.kill()
+	}
+
+	// Rebater a bolinha = Inverter as direções
+	let interseccao = event.contact.mtv.normalize()
+
+	// Se não está colidindo
+	// !colidindo -> colidindo == false
+	if (!colidindo) {
+		colidindo = true
+
+		// interseccao.x e interseccao.y
+		// O maior representa o eixo onde houve o contato
+		if (Math.abs(interseccao.x) > Math.abs(interseccao.y)) {
+			// bolinha.vel.x = -bolinha.vel.x
+			// bolinha.vel.x *= -1
+			bolinha.vel.x = bolinha.vel.x * -1
+		} else {
+			// bolinha.vel.y = -bolinha.vel.y
+			// bolinha.vel.y *= -1
+			bolinha.vel.y = bolinha.vel.y * -1
+		}
+	}
+})
+
+bolinha.on("collisionend", () => {
+	colidindo = false
+})
+
+bolinha.on("exitviewport", () => {
+	alert("E morreu")
+	window.location.reload()
+})
 
 // Inicia o game
 game.start()
