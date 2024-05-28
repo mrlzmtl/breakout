@@ -1,10 +1,16 @@
-import { Actor, CollisionType, Color, Engine, Font, Text, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, FontUnit, Label, Loader, Sound, vec } from "excalibur"
 
 // 1 - Criar uma instancia de Engine, que representa o jogo
 const game = new Engine({
 	width: 800,
 	height: 600
 })
+
+const ping = new Sound('./src/bolinha.wav');
+const lose = new Sound('./src/roblox-death-sound-effect.mp3');
+const plim = new Sound('./src/plim.mp3')
+const pong = new Loader([ping, lose, plim]);
+await game.start(pong);
 
 // 2 - Criar barra do player
 const barra = new Actor({
@@ -115,32 +121,59 @@ listaBlocos.forEach(bloco => {
 	game.add(bloco)
 })
 
+// Adicionando pontuação
 let pontos = 0
 
-const textoPontos = new Text({
-	text: "Hello World",
-	font: new Font({ size: 30 })
+const textoPontos = new Label({
+	text: pontos.toString(),
+	font: new Font({
+		size: 40,
+		color: Color.White,
+		strokeColor: Color.Black,
+		unit: FontUnit.Px
+	}),
+	pos: vec(600, 500)
 })
 
-const objetoTexto = new Actor({
-	x: game.drawWidth - 80,
-	y: game.drawHeight - 15
-})
+game.add(textoPontos)
 
-objetoTexto.graphics.use(textoPontos)
+// const textoPontos = new Text({
+// 	text: "Hello World",
+// 	font: new Font({ size: 30 })
+// })
 
-game.add(objetoTexto)
+// const objetoTexto = new Actor({
+// 	x: game.drawWidth - 80,
+// 	y: game.drawHeight - 15
+// })
+
+// objetoTexto.graphics.use(textoPontos)
+
+// game.add(objetoTexto)
 
 let colidindo: boolean = false
 
 bolinha.on("collisionstart", (event) => {
 	// Verificar se a bolinha colidiu com algum bloco destrutivel
 	console.log("Colidiu com", event.other.name);
+	ping.play(0.5);
 	
 	// Se o elemento colidido for um bloco da lista de blocos (destrutiveis)
 	if (listaBlocos.includes(event.other)) {
 		// Destruir o bloco colidido
 		event.other.kill()
+
+		// Adiciona um ponto
+		pontos++
+
+		// Atualiza valor do placar - textoPontos
+		textoPontos.text = pontos.toString()
+
+		if (pontos == 15) {
+			plim.play(0.5)
+			alert("Você ganhou")
+			window.location.reload()
+		}
 	}
 
 	// Rebater a bolinha = Inverter as direções
@@ -170,6 +203,7 @@ bolinha.on("collisionend", () => {
 })
 
 bolinha.on("exitviewport", () => {
+	lose.play(0.5)
 	alert("E morreu")
 	window.location.reload()
 })
