@@ -10,7 +10,7 @@ const ping = new Sound('./src/bolinha.wav');
 const lose = new Sound('./src/roblox-death-sound-effect.mp3');
 const plim = new Sound('./src/plim.mp3')
 const pong = new Loader([ping, lose, plim]);
-await game.start(pong);
+
 
 // 2 - Criar barra do player
 const barra = new Actor({
@@ -209,4 +209,4 @@ bolinha.on("exitviewport", () => {
 })
 
 // Inicia o game
-game.start()
+await game.start(pong)
