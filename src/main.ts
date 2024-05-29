@@ -6,9 +6,10 @@ const game = new Engine({
 	height: 600
 })
 
-const ping = new Sound('./src/bolinha.wav');
+const ping = new Sound('./src/plim.mp3');
 const lose = new Sound('./src/roblox-death-sound-effect.mp3');
-const plim = new Sound('./src/plim.mp3')
+const plim = new Sound('./src/rojao.wav')
+
 const pong = new Loader([ping, lose, plim]);
 
 
@@ -43,6 +44,20 @@ const bolinha = new Actor({
 })
 
 bolinha.body.collisionType = CollisionType.Passive
+
+// let coresBolinha = [
+// 	Color.Black,
+// 	Color.Green,
+// 	Color.Yellow,
+// 	Color.Red,
+// 	Color.Magenta,
+// 	Color.Violet,
+// 	Color.Blue,
+// 	Color.White,
+// 	Color.Rose
+// ]
+
+// let numeroCores = coresBolinha.length
 
 // 5 - Criar movimentação da bolinha
 const velocidadeBolinha = vec(1000, 1000)
@@ -156,22 +171,27 @@ let colidindo: boolean = false
 bolinha.on("collisionstart", (event) => {
 	// Verificar se a bolinha colidiu com algum bloco destrutivel
 	console.log("Colidiu com", event.other.name);
-	ping.play(0.5);
+	
 	
 	// Se o elemento colidido for um bloco da lista de blocos (destrutiveis)
 	if (listaBlocos.includes(event.other)) {
 		// Destruir o bloco colidido
 		event.other.kill()
+		ping.play(0.5);
 
 		// Adiciona um ponto
 		pontos++
+
+		// Mudar a cor da bolinha
+		// bolinha.color = coresBolinha[ Math.trunc(Math.random() * numeroCores)]
+		bolinha.color = event.other.color
 
 		// Atualiza valor do placar - textoPontos
 		textoPontos.text = pontos.toString()
 
 		if (pontos == 15) {
-			plim.play(0.5)
-			alert("Você ganhou")
+			plim.play(0.2)
+			alert('Você ganhou!!!')
 			window.location.reload()
 		}
 	}
@@ -203,7 +223,7 @@ bolinha.on("collisionend", () => {
 })
 
 bolinha.on("exitviewport", () => {
-	lose.play(0.5)
+	lose.play(1)
 	alert("E morreu")
 	window.location.reload()
 })
